@@ -154,6 +154,131 @@ def swap_2opt(tour, i, k):
     new_tour = [int(i) for i in new_tour]
     return list(new_tour)
 
+def performe_3opt_swap(tour, reconnectionType, action1, action2, action3):
+        assert reconnectionType >= 0 and reconnectionType <= 7
+        if(reconnectionType == 0):
+            return tour
+
+        if(reconnectionType == 1):
+            new_tour = swap_2opt(tour, action1, action3)
+        elif(reconnectionType == 2):
+            new_tour = swap_2opt(tour, action1, action2)
+        elif(reconnectionType == 3):
+            new_tour = swap_2opt(tour, action2, action3)
+        elif(reconnectionType == 4):
+            # Anfang1, Anfang3 -> Ende2, Ende1 -> Anfang2, Ende3
+            #[0,1/2,3,4/5,6/7,8,9] -> 2, 4, 6
+            #[0,1,6,5,2,3,4,7,8,9]
+            new_tour = tour[0:action1]
+            new_tour = np.append(new_tour, np.flip(tour[action2 + 1:action3 + 1], axis=0))
+            new_tour = np.append(new_tour, tour[action1:action2 + 1], axis=0)
+            new_tour = np.append(new_tour, tour[action3 + 1:])
+            new_tour = [int(i) for i in new_tour]
+        elif(reconnectionType == 5):
+            # Anfang1, Ende2 -> Anfang3, Anfang2 -> Ende1, Anfang3
+            #5
+            #0,1/2,3/4,5/6,7,8,9 -> 8 12 17
+            #0,1,4,5,3,2,6,7,8,9
+            new_tour = tour[0:action1]
+            new_tour = np.append(new_tour, tour[action2:action3])
+            new_tour = np.append(new_tour, np.flip(tour[action1:action2], axis=0))
+            new_tour = np.append(new_tour, tour[action3:])
+            new_tour = [int(i) for i in new_tour]
+        elif(reconnectionType == 6):
+            # Anfang1, Anfang2 -> Ende1, Anfang3 -> Ende2, Ende3
+            #0,1/2,3,4/5,6/7,8,9
+            #0,1,4,3,2,6,5,7,8,9
+            new_tour = tour[0:action1]
+            new_tour = np.append(new_tour, np.flip(tour[action1:action2 +1], axis=0))
+            new_tour = np.append(new_tour, np.flip(tour[action2 + 1:action3 + 1], axis=0))
+            new_tour = np.append(new_tour, tour[action3+1:])
+            new_tour = [int(i) for i in new_tour]
+        elif(reconnectionType == 7):
+            # Anfang1, Ende2 -> Anfang3, Ende1 -> Anfang2, Ende3
+            #0,1/2,3/4,5/6,7,8,9
+            #0,1,4,5,2,3,6,7,8,9
+            new_tour = tour[0:action1]
+            new_tour = np.append(new_tour, tour[action2:action3])
+            new_tour = np.append(new_tour, tour[action1:action2])
+            new_tour = np.append(new_tour, tour[action3:])
+            new_tour = [int(i) for i in new_tour]
+        return new_tour
+
+def distances_3opt(tour, D):
+    distance = 0
+    for i in range(len(tour) -1):
+        distance += D[tour[i]][tour[i+1]]
+    distance += D[tour[len(tour) -1]][tour[0]]
+    return distance
+
+def swap_3opt(tour, action1, action2, action3, tour_distance, D):
+    """
+    param: action1 -> rechts oben
+    param: action2 -> unten
+    param: action3 -> links oben
+    """
+    reconnection_types = 7
+    action1, action2, action3 = sortAction(action1, action2, action3)
+    tour_list = []
+    distance_list = []
+    new_tour = []
+    min_index = 0
+    min_distance = tour_distance + 1
+    #new_tour, new_distance = swap_2opt_new(tour, action1, action3)
+    #edge case action3 is length of tour
+    
+
+    for reconnectionType in range(1, reconnection_types + 1):
+        if(reconnectionType == 1):
+            new_tour, distance = swap_2opt_new(tour, action1, action3, tour_distance, D)
+        elif(reconnectionType == 2):
+            new_tour, distance = swap_2opt_new(tour, action1, action2, tour_distance, D)
+        elif(reconnectionType == 3):
+            new_tour, distance = swap_2opt_new(tour, action2, action3, tour_distance, D)
+        elif(reconnectionType == 4):
+            new_tour = performe_3opt_swap(tour, reconnectionType, action1, action2, action3)
+            distance = distances_3opt(new_tour, D)
+        elif(reconnectionType == 5):
+            new_tour = performe_3opt_swap(tour, reconnectionType, action1, action2, action3)
+            distance = distances_3opt(new_tour, D)
+        elif(reconnectionType == 6):
+            new_tour = performe_3opt_swap(tour, reconnectionType, action1, action2, action3)
+            distance = distances_3opt(new_tour, D)
+        elif(reconnectionType == 7):
+            new_tour = performe_3opt_swap(tour, reconnectionType, action1, action2, action3)
+            distance = distances_3opt(new_tour, D)
+
+        if(distance < min_distance):
+            min_distance = distance
+            min_index = reconnectionType - 1
+
+        tour_list.append(new_tour)
+        distance_list.append(distance)
+
+    print("Distance List: ", distance_list)
+    if(tour_distance == min_distance):
+        return tour, tour_distance, 0
+    return tour_list[min_index], distance_list[min_index], min_index+1 #returning reconnection type
+    
+
+def sortAction(ac1, ac2, ac3):
+    if(ac1 < ac2):
+        if(ac2 < ac3):
+            return ac1, ac2, ac3
+        else:
+            if(ac1 < ac3):
+                return ac1, ac3, ac2
+            else:
+                return ac3, ac1, ac2
+    else:
+        if(ac1 < ac3):
+            return ac2, ac1, ac3
+        else:
+            if(ac3 < ac2):
+                return ac3, ac2, ac1
+            else:
+                return ac2, ac3, ac1
+
 
 def swap_2opt_(tour, i, k, tour_distance, distances):
     """

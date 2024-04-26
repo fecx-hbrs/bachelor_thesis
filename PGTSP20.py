@@ -87,8 +87,8 @@ parser.add_argument('--hidden_dim',
                     type=int, default=128, help='Number of hidden units')
 parser.add_argument('--n_rnn_layers',
                     type=int, default=1, help='Number of LSTM layers')
-parser.add_argument('--n_actions',
-                    type=int, default=2, help='Number of nodes to output')
+parser.add_argument('--search_opt',
+                     type=int, default=2, help='Type of Search Algorithm used')
 parser.add_argument('--graph_ref',
                     default=False,
                     action='store_true',
@@ -109,6 +109,12 @@ id = uid.hex
 log = {}
 log['hyperparameters'] = {}
 args = parser.parse_args()
+
+#define number of actions for ActorCriticNetwork
+if(args.search_opt == 2):
+    n_actions = 2
+else:
+    n_actions = 3
 
 # log hyperparameters
 for arg in vars(args):
@@ -145,7 +151,7 @@ else:
                                 args.hidden_dim,
                                 args.n_points,
                                 args.n_rnn_layers,
-                                args.n_actions,
+                                n_actions,
                                 args.graph_ref)
 
 
@@ -168,7 +174,7 @@ if USE_CUDA:
     #                               device_ids=range(torch.cuda.device_count()))
     cudnn.benchmark = True
 
-
+#args.data_dir = 
 if args.test_from_data:
     test_data = TSPDataset(dataset_fname=os.path.join(args.data_dir,
                                                       'TSP{}-data.json'
@@ -373,6 +379,7 @@ for epoch in range(args.epochs):
     for batch_idx, batch_sample in enumerate(train_loader):
         t = 0
         b_sample = batch_sample.clone().detach().numpy()
+        print("batch Sample: ", b_sample)
         batch_reward = 0
 
         # every batch defines a set of agents running the same policy
@@ -392,7 +399,7 @@ for epoch in range(args.epochs):
                                              hidden,
                                              buffer,
                                              best_state)
-
+                
                 next_state, reward, _, best_distance, _, next_best_state = \
                     env.step(action.cpu().numpy())
 
@@ -438,6 +445,7 @@ for epoch in range(args.epochs):
         val_b_sample = val_batch_sample.clone().detach().numpy()
         val_batch_reward = 0
         env = VecEnv(TSPInstanceEnv, val_b_sample.shape[0], args.n_points)
+        print("B-Sample2: ", val_b_sample.shape[0])
         state, initial_distance, best_state = env.reset(val_b_sample)
         t = 0
         hidden = None

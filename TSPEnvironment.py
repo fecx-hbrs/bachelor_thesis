@@ -98,17 +98,20 @@ class TSPInstanceEnv():
         :param torch.tensor action: indices (i, j) where i <= j shape: (1, 2)
         """
         # tour: new reset tour after a 2opt move
-        self.tour = utils.swap_2opt(self.tour,
+        if(len(action) == 3):
+            self.new_keep_tour, self.new_tour_distance, rc_type = utils.swap_3opt(self.keep_tour, action[0], action[1], action[2], self.tour_distance, self.distances)
+            self.tour = utils.performe_3opt_swap(self.tour, rc_type, action[0], action[1], action[2])
+        else:
+            self.tour = utils.swap_2opt(self.tour,
                                     action[0],
                                     action[1])
-
-        # keep_tour: same 2opt move on keep_tour to keep history
-        self.new_keep_tour, self.new_tour_distance = utils.swap_2opt_new(self.keep_tour,
+            self.new_keep_tour, self.new_tour_distance = utils.swap_2opt_new(self.keep_tour,
                                                               action[0],
                                                               action[1],
                                                               self.tour_distance,
                                                               self.distances)
-
+        #self.tour = utils.swap_3opt(self.tour, action[0], action[1], action[2], self.distances)
+        # keep_tour: same 2opt move on keep_tour to keep history
         self.state = self.state[self.tour, :]
         self.tour_distance = self.new_tour_distance.copy()
         if (self.current_best_distance > self.tour_distance):
@@ -125,6 +128,7 @@ class TSPInstanceEnv():
         self.hist_current_distance.append(self.tour_distance)
         self.hist_best_distance.append(self.current_best_distance)
         self.keep_tour = self.new_keep_tour.copy()
+        print("Best Tour: ", self.current_best_distance)
 
         # before going to the next state tour gets reset
         self.tour = self.reset_tour.copy()
@@ -216,12 +220,25 @@ class VecEnv():
 
     def step(self, actions):
 
-        observations = np.ndarray((self.n_envs, self.n_nodes, 2))
+        #observations auf 3 gesetzt
+        """ observations = np.ndarray((self.n_envs, self.n_nodes, 2))
         best_observations = np.ndarray((self.n_envs, self.n_nodes, 2))
         rewards = np.ndarray((self.n_envs, 1))
-        dones = np.ndarray((self.n_envs, 1), dtype=bool)
+        dones = np.ndarray((self.n_envs, 1), dtype=bool) """
+
+        if(len(actions) == 3):
+            observations = np.ndarray((self.n_envs, self.n_nodes, 3))
+            best_observations = np.ndarray((self.n_envs, self.n_nodes, 3))
+            rewards = np.ndarray((self.n_envs, 2))
+            dones = np.ndarray((self.n_envs, 2), dtype=bool)
+        else:
+            observations = np.ndarray((self.n_envs, self.n_nodes, 2))
+            best_observations = np.ndarray((self.n_envs, self.n_nodes, 2))
+            rewards = np.ndarray((self.n_envs, 1))
+            dones = np.ndarray((self.n_envs, 1), dtype=bool)
 
         idx = 0
+        print("Anzahl", self.envs)
         for env in self.envs:
             obs, reward, done, best_obs = env.step(actions[idx])
             self.best_distances[idx] = env.current_best_distance

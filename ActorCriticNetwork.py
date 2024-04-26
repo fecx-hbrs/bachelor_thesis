@@ -72,7 +72,6 @@ class Encoder(nn.Module):
         """
 
         batch_size = input.size(0)
-
         edges = utils.batch_pair_squared_dist(input, input)
         edges.requires_grad = False
 
@@ -100,6 +99,7 @@ class Encoder(nn.Module):
             + F.relu(torch.bmm(edges, self.g_embedding1(g_embedding)))
         g_embedding = g_embedding \
             + F.relu(torch.bmm(edges, self.g_embedding2(g_embedding)))
+        
 
         rnn_input = g_embedding
         rnn_input_reversed = torch.flip(g_embedding, [1])
@@ -269,12 +269,24 @@ class Decoder(nn.Module):
         log_probs_pts = []
         entropy = []
         for i in range(self.n_actions):
-            if i == 0:
+            # was ist mask
+            if(self.n_actions== 3):
+                if i == 0:
                 # if it's the first output mask the last index
-                mask[:, -1] = 0
-            if i == 1:
-                # return the last index
-                mask[:, -1] = 1
+                    mask[:, -2] = 0
+                    mask[:, -1] = 0
+                if(i == 1):
+                    mask[:, -2] = 1
+                    mask[:, -1] = 0
+                if(i == self.n_actions - 1):
+                    mask[:, -1] = 1
+            else:
+                if i == 0:
+                # if it's the first output mask the last index
+                    mask[:, -1] = 0
+                if(i == self.n_actions - 1):
+                    mask[:, -1] = 1
+            print("Mask: ", mask)
 
             h = tanh(self.W_1(h) + self.W_0(dec_input))
 
@@ -283,6 +295,7 @@ class Decoder(nn.Module):
             # # Masking selected inputs
             # masked_outs: (batch, seq_len)
             masked_prob = prob*mask
+            print("Masked Probs", masked_prob)
 
             c = torch.distributions.Categorical(masked_prob)
             if actions is None:
@@ -293,6 +306,7 @@ class Decoder(nn.Module):
                 indices = actions[:, i]
                 log_probs_idx = c.log_prob(indices)
                 dist_entropy = c.entropy()
+            print("Indices: ", indices)
 
             repeat_indices = indices.unsqueeze(1).expand(-1, n_nodes)
 
@@ -325,9 +339,14 @@ class Decoder(nn.Module):
         probs = torch.cat(probs).permute(1, 0, 2)
 
         # pointers: index outputs (batch_size, n_actions)
+        # pointers = actions -> Tensor([a, b])
         pointers = torch.cat(pointers, 1)
         log_probs_pts = torch.cat(log_probs_pts, 1)
         entropies = torch.cat(entropy, 1)
+        print("1: ", probs)
+        print("2: ", pointers)
+        print("3: ", log_probs_pts)
+        print("4: ", entropies)
 
         return probs, pointers, log_probs_pts, entropies
 
