@@ -128,7 +128,6 @@ class TSPInstanceEnv():
         self.hist_current_distance.append(self.tour_distance)
         self.hist_best_distance.append(self.current_best_distance)
         self.keep_tour = self.new_keep_tour.copy()
-        print("Best Tour: ", self.current_best_distance)
 
         # before going to the next state tour gets reset
         self.tour = self.reset_tour.copy()
@@ -238,7 +237,6 @@ class VecEnv():
             dones = np.ndarray((self.n_envs, 1), dtype=bool)
 
         idx = 0
-        print("Anzahl", self.envs)
         for env in self.envs:
             obs, reward, done, best_obs = env.step(actions[idx])
             self.best_distances[idx] = env.current_best_distance

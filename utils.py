@@ -255,7 +255,6 @@ def swap_3opt(tour, action1, action2, action3, tour_distance, D):
         tour_list.append(new_tour)
         distance_list.append(distance)
 
-    print("Distance List: ", distance_list)
     if(tour_distance == min_distance):
         return tour, tour_distance, 0
     return tour_list[min_index], distance_list[min_index], min_index+1 #returning reconnection type

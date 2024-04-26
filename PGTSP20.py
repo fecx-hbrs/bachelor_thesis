@@ -379,7 +379,6 @@ for epoch in range(args.epochs):
     for batch_idx, batch_sample in enumerate(train_loader):
         t = 0
         b_sample = batch_sample.clone().detach().numpy()
-        print("batch Sample: ", b_sample)
         batch_reward = 0
 
         # every batch defines a set of agents running the same policy
@@ -445,7 +444,6 @@ for epoch in range(args.epochs):
         val_b_sample = val_batch_sample.clone().detach().numpy()
         val_batch_reward = 0
         env = VecEnv(TSPInstanceEnv, val_b_sample.shape[0], args.n_points)
-        print("B-Sample2: ", val_b_sample.shape[0])
         state, initial_distance, best_state = env.reset(val_b_sample)
         t = 0
         hidden = None
