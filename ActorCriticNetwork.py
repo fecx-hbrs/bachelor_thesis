@@ -286,7 +286,6 @@ class Decoder(nn.Module):
                     mask[:, -1] = 0
                 if(i == self.n_actions - 1):
                     mask[:, -1] = 1
-            print("Mask: ", mask)
 
             h = tanh(self.W_1(h) + self.W_0(dec_input))
 
@@ -295,7 +294,6 @@ class Decoder(nn.Module):
             # # Masking selected inputs
             # masked_outs: (batch, seq_len)
             masked_prob = prob*mask
-            print("Masked Probs", masked_prob)
 
             c = torch.distributions.Categorical(masked_prob)
             if actions is None:
@@ -306,7 +304,6 @@ class Decoder(nn.Module):
                 indices = actions[:, i]
                 log_probs_idx = c.log_prob(indices)
                 dist_entropy = c.entropy()
-            print("Indices: ", indices)
 
             repeat_indices = indices.unsqueeze(1).expand(-1, n_nodes)
 
@@ -343,10 +340,6 @@ class Decoder(nn.Module):
         pointers = torch.cat(pointers, 1)
         log_probs_pts = torch.cat(log_probs_pts, 1)
         entropies = torch.cat(entropy, 1)
-        print("1: ", probs)
-        print("2: ", pointers)
-        print("3: ", log_probs_pts)
-        print("4: ", entropies)
 
         return probs, pointers, log_probs_pts, entropies
 
