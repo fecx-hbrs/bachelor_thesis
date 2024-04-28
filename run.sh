@@ -2,7 +2,7 @@
 #SBATCH --partition=gpu4          # GPU partition
 #SBATCH --nodes=1                # number of nodes
 #SBATCH --gres=gpu:4               # ask for a node with 4 GPUs
-#SBATCH --time=6:00:00           # total runtime of job allocation
+#SBATCH --time=24:00:00           # total runtime of job allocation
 
 cd /home/fcamus2s/bachelor_thesis/
 git pull
