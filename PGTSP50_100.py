@@ -12,7 +12,7 @@ from ActorCriticNetwork import ActorCriticNetwork
 from DataGenerator import TSPDataset
 from TSPEnvironment import TSPInstanceEnv, VecEnv
 from torch.utils.tensorboard import SummaryWriter
-from apex import amp
+#from apex import amp
 
 parser = argparse.ArgumentParser()
 
@@ -170,8 +170,8 @@ if USE_CUDA:
 
 
 # Initialization
-opt_level = 'O1'
-policy, optimizer = amp.initialize(policy, optimizer, opt_level=opt_level)
+#opt_level = 'O1'
+#policy, optimizer = amp.initialize(policy, optimizer, opt_level=opt_level)
 
 if args.test_from_data:
     test_data = TSPDataset(dataset_fname=os.path.join(args.data_dir,
@@ -274,16 +274,16 @@ def learn(R, t_s, beta, zeta, count_learn, epoch):
     e_loss = (0.9**(epoch+1))*beta*entropies.sum(0).mean()
 
     optimizer.zero_grad()
-    with amp.scale_loss(p_loss, optimizer) as scaled_p_loss:
-        scaled_p_loss.backward(retain_graph=True)
+    #with amp.scale_loss(p_loss, optimizer) as scaled_p_loss:
+        #scaled_p_loss.backward(retain_graph=True)
     # p_loss.backward(retain_graph=True)
     grads = np.concatenate([p.grad.data.cpu().numpy().flatten()
                             for p in policy.parameters()
                             if p.grad is not None])
 
     r_loss = - e_loss + v_loss
-    with amp.scale_loss(r_loss, optimizer) as scaled_r_loss:
-        scaled_r_loss.backward()
+    #with amp.scale_loss(r_loss, optimizer) as scaled_r_loss:
+        #scaled_r_loss.backward()
     # r_loss.backward()
     # nn.utils.clip_grad_norm_(policy.parameters(), args.max_grad_norm)
     optimizer.step()
@@ -510,7 +510,7 @@ for epoch in range(args.epochs):
         checkpoint = {
             'policy': policy.state_dict(),
             'optimizer': optimizer.state_dict(),
-            'amp': amp.state_dict()
+            #'amp': amp.state_dict()
         }
         torch.save(checkpoint, os.path.join(model_dir,
                                             'pg-{}-TSP{}-epoch-{}.pt'

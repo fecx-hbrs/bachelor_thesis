@@ -269,20 +269,20 @@ class Decoder(nn.Module):
         log_probs_pts = []
         entropy = []
         for i in range(self.n_actions):
-            # was ist mask
             if(self.n_actions== 3):
                 if i == 0:
-                # if it's the first output mask the last index
+                    #letzten beiden Werte von mask auf 0 für ersten Action Wert
                     mask[:, -2] = 0
                     mask[:, -1] = 0
                 if(i == 1):
+                    #letzter Wert auf 0 und vorletzter auf 1 für zweiten action Wert (größer als erster action Wert und kleiner als letzter action Wert)
                     mask[:, -2] = 1
                     mask[:, -1] = 0
                 if(i == self.n_actions - 1):
+                    #letzter Wert auf 1 für den dritten action Wert
                     mask[:, -1] = 1
             else:
                 if i == 0:
-                # if it's the first output mask the last index
                     mask[:, -1] = 0
                 if(i == self.n_actions - 1):
                     mask[:, -1] = 1
