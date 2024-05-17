@@ -8,4 +8,4 @@ cd /home/fcamus2s/bachelor_thesis/
 git pull
 module load cuda
 #./my_cuda_program.exe
-python PGTSP20.py --search_opt 2 --n_points 100
+python PGTSP20.py --search_opt 3 --n_points 100
