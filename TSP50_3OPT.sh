@@ -3,7 +3,7 @@
 #SBATCH --nodes=1                # number of nodes
 #SBATCH --gres=gpu:4               # ask for a node with 4 GPUs
 #SBATCH --time=72:00:00           # total runtime of job allocation
-#SBATCH --mem=400G                   
+#SBATCH --mem=100G                   
 
 cd /home/fcamus2s/bachelor_thesis/
 git pull
